@@ -27,7 +27,7 @@ func (block *Block) Serialize() []byte {
 }
 
 // 将区块序列化成字节数组
-func Deserialize(blockbytes []byte) Block {
+func Deserialize(blockbytes []byte) *Block {
 	var block Block
 
 	decoder := gob.NewDecoder(bytes.NewReader(blockbytes))
@@ -35,6 +35,6 @@ func Deserialize(blockbytes []byte) Block {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return block
+	return &block
 
 }

@@ -25,4 +25,4 @@ jobs:
         fi
 
     - name: Build
-      run: cd ../part10-persistence-and-cli && go build -v .
+      run: cd part10-persistence-and-cli && go build -v .

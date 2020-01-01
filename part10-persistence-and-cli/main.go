@@ -1,8 +1,9 @@
 package main
 
 import (
-	"blockchain/part10-persistence-and-cli/blc"
 	"fmt"
+
+	"github.com/rh01/learn-blockchain/part10-persistence-and-cli/blc"
 )
 
 func main() {

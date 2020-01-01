@@ -1,4 +1,4 @@
-package blc
+package BLC
 
 import (
 	"fmt"

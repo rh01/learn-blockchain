@@ -19,15 +19,32 @@ type BlockChain struct {
 	Db  *bolt.DB // 数据库
 }
 
-// // AddBlock 新增区块
-// func (blockchain *BlockChain) AddBlock(data string) {
-// 	// 1. 获取区块链中最后一个区块的hash值
-// 	S := len(blockchain.Blocks)
-// 	prevBlockHash := blockchain.Blocks[S-1].Hash
-// 	block := NewBlock(data, prevBlockHash)
-// 	// 2. 添加
-// 	blockchain.Blocks = append(blockchain.Blocks, block)
-// }
+// AddBlock 新增区块
+func (blockchain *BlockChain) AddBlock(data string) {
+	// 1. 创建区块
+	newBlock := NewBlock(data, blockchain.Tip)
+	// 获取数据库表
+	err := blockchain.Db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(blockTableName))
+		// 存储新区块的数据
+		err := b.Put(newBlock.Hash, newBlock.Serialize())
+		if err != nil {
+			log.Panic(err)
+		}
+
+		// 更新l对应的Hash
+		err = b.Put([]byte("l"), newBlock.Hash)
+		if err != nil {
+			log.Panic(err)
+		}
+		// 更新区块链的Tip为最新的区块的Hash值
+		blockchain.Tip = newBlock.Hash
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+}
 
 // 判断数据库是否存在
 func dbExists() bool {
@@ -38,7 +55,7 @@ func dbExists() bool {
 	return true
 }
 
-// NewBlockchain 创建一个带有创世区块节点的区块链
+// CreateBlockchainWithGenesisBlock 创建一个带有创世区块节点的区块链
 func CreateBlockchainWithGenesisBlock() *BlockChain {
 
 	if dbExists() {
@@ -114,4 +131,49 @@ func CreateBlockchainWithGenesisBlock() *BlockChain {
 	})
 
 	return &BlockChain{blockHash, db}
+}
+
+// NewBlockChain 初始化一个区块链
+func NewBlockChain() *BlockChain {
+	var tip []byte // 获取最后一个区块的hash值
+
+	// 尝试打开或者创建数据库
+	db, err := bolt.Open(dbName, 0600, nil)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(blockTableName))
+		if b == nil {
+			b, err = tx.CreateBucket([]byte(blockTableName))
+			if err != nil {
+				log.Panic(err)
+			}
+			// 将创世区块序列化后的数据存储在表中
+			genesisBlock := NewGenesisBlock()
+
+			err = b.Put(genesisBlock.Hash, genesisBlock.Serialize())
+			if err != nil {
+				log.Panic(err)
+			}
+
+			// 接下来存储Hash
+			err = b.Put([]byte("l"), genesisBlock.Hash)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			tip = genesisBlock.Hash
+		} else {
+			tip = b.Get([]byte("l"))
+		}
+
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return &BlockChain{tip, db}
 }

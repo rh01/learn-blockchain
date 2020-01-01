@@ -1,4 +1,4 @@
-package BLC
+package blc
 
 import (
 	"fmt"
@@ -38,7 +38,7 @@ func dbExists() bool {
 	return true
 }
 
-// NewBlockchain 创建一个带有创世区块节点的区块链
+// CreateBlockchainWithGenesisBlock 创建一个带有创世区块节点的区块链
 func CreateBlockchainWithGenesisBlock() *BlockChain {
 
 	if dbExists() {
@@ -114,4 +114,49 @@ func CreateBlockchainWithGenesisBlock() *BlockChain {
 	})
 
 	return &BlockChain{blockHash, db}
+}
+
+// NewBlockChain 初始化一个区块链
+func NewBlockChain() *BlockChain {
+	var tip []byte // 获取最后一个区块的hash值
+
+	// 尝试打开或者创建数据库
+	db, err := bolt.Open(dbName, 0600, nil)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(blockTableName))
+		if b == nil {
+			b, err = tx.CreateBucket([]byte(blockTableName))
+			if err != nil {
+				log.Panic(err)
+			}
+			// 将创世区块序列化后的数据存储在表中
+			genesisBlock := NewGenesisBlock()
+
+			err = b.Put(genesisBlock.Hash, genesisBlock.Serialize())
+			if err != nil {
+				log.Panic(err)
+			}
+
+			// 接下来存储Hash
+			err = b.Put([]byte("l"), genesisBlock.Hash)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			tip = genesisBlock.Hash
+		} else {
+			tip = b.Get([]byte("l"))
+		}
+
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return &BlockChain{tip, db}
 }

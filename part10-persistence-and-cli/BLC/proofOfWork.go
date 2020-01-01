@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	targetBits = 24
+	targetBits = 20
 	maxNonce   = math.MaxInt64
 )
 
@@ -23,6 +23,7 @@ type ProofOfWork struct {
 func NewProofOfWork(block *Block) *ProofOfWork {
 	target := big.NewInt(1)
 
+	// 左移位
 	target.Lsh(target, uint(256-targetBits))
 
 	pow := &ProofOfWork{block, target}
@@ -44,7 +45,6 @@ func (p *ProofOfWork) prepareData(nonce int) []byte {
 	return data
 }
 
-// Run 方法是挖矿
 func (p *ProofOfWork) Run() ([]byte, int) {
 	var hashInt big.Int
 	var hash [32]byte
@@ -67,12 +67,13 @@ func (p *ProofOfWork) Run() ([]byte, int) {
 			nonce++
 		}
 	}
+
+	fmt.Println("")
 	fmt.Println("")
 
 	return hash[:], nonce
 }
 
-// Validate 用来验证
 func (p *ProofOfWork) Validate() bool {
 	var hashInt big.Int
 

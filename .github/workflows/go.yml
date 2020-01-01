@@ -25,4 +25,6 @@ jobs:
         fi
 
     - name: Build
-      run: cd part7-boltDB-view && go build -v .
+      run: |
+      cd part7-boltDB-view && go build -v .
+      cd ../part10-persistence-and-cli && go build -v .

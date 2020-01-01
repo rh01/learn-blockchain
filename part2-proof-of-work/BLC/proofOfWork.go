@@ -44,6 +44,7 @@ func (p *ProofOfWork) prepareData(nonce int) []byte {
 	return data
 }
 
+// Run 方法是挖矿
 func (p *ProofOfWork) Run() ([]byte, int) {
 	var hashInt big.Int
 	var hash [32]byte
@@ -70,6 +71,7 @@ func (p *ProofOfWork) Run() ([]byte, int) {
 	return hash[:], nonce
 }
 
+// Validate 用来验证
 func (p *ProofOfWork) Validate() bool {
 	var hashInt big.Int
 

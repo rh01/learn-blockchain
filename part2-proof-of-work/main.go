@@ -1,10 +1,9 @@
 package main
 
 import (
+	"blockchain/part2-proof-of-work/BLC"
 	"fmt"
 	"time"
-
-	"github.com/rh01/blockchain/part2-proof-of-work/BLC"
 )
 
 // 16 进制
@@ -28,7 +27,7 @@ func main() {
 		fmt.Printf("TimeStamp: %v\n", time.Unix(block.TimeStamp, 0).Format("2006-01-02 03:04:05 PM")) // Format 参数不能随意修改
 		fmt.Printf("Hash: %x\n", (block.Hash))
 		fmt.Printf("Nonce: %v\n", block.Nonce)
- 
+
 		fmt.Println("")
 	}
 }

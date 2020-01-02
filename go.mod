@@ -1,4 +1,4 @@
-module blockchain
+module github.com/rh01/learn-blockchain
 
 go 1.12
 

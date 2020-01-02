@@ -17,7 +17,7 @@ func main() {
 	// 数据库的创建
 	db, err := bolt.Open(dbFile, 0600, nil)
 	if err != nil {
-		log.Panic(err)
+		log.Fatalf("database %v not found", blocksBuckets)
 	}
 	defer db.Close()
 
@@ -25,7 +25,9 @@ func main() {
 	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blocksBuckets))
 		value := b.Get([]byte("shh"))
-		fmt.Println(string(value))
+		if value == nil {
+			return fmt.Errorf("No value found")
+		}
 		return nil
 	})
 

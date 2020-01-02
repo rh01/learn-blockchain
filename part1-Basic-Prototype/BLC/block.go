@@ -31,16 +31,14 @@ func (block *Block) SetHash() {
 
 // NewBlock is factory method to make a Block ref
 func NewBlock(data string, prevBlockHash []byte) *Block {
-
-	// 创建区块
+	// 创建区块，需要设置的有生成该区块的时间戳，数据段、前一区块的hash值
 	block := &Block{time.Now().Unix(), []byte(data), prevBlockHash, []byte{}}
-	// 设置当前区块hash
+	// 设置当前区块的hash
 	block.SetHash()
-
 	return block
 }
 
-// 创建创世区块
+// NewGenesisBlock 用来创建创世区块
 func NewGenesisBlock() *Block {
 	return NewBlock("Genenius Block", []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
 }

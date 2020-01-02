@@ -21,31 +21,32 @@ func main() {
 	}
 	defer db.Close()
 
-	// 插入更新数据库
+	// 插入或者更新数据库
 	err = db.Update(func(tx *bolt.Tx) error {
 
 		// 查看仓库是否存在
 		b := tx.Bucket([]byte(blocksBuckets))
 		// 若没有存在
 		if b == nil {
-			fmt.Println("No existing blc found. Creating")
-		}
+			fmt.Println("No existing blc found. Creating one ...")
 
-		// 创建表
-		b, err = tx.CreateBucket([]byte(blocksBuckets))
-		if err != nil {
-			log.Fatal(err)
-		}
+			// 创建表
+			b, err = tx.CreateBucket([]byte(blocksBuckets))
+			if err != nil {
+				log.Panic(err)
+			}
 
-		// 存储数据 kv
-		err = b.Put([]byte("shh"), []byte("https://41sh.cn"))
-		if err != nil {
-			log.Fatal(err)
-		}
+			// 存储数据 kv
+			// key []byte, value []byte
+			err = b.Put([]byte("shh"), []byte("https://41sh.cn"))
+			if err != nil {
+				log.Panic(err)
+			}
 
-		err = b.Put([]byte("shh2"), []byte("https://shenhengheng.cn"))
-		if err != nil {
-			log.Fatal(err)
+			err = b.Put([]byte("shh2"), []byte("https://shenhengheng.cn"))
+			if err != nil {
+				log.Panic(err)
+			}
 		}
 
 		return nil

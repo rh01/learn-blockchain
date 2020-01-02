@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/rh01/learn-blockchain/part12-iterate-db-block-chain/BLC"
+	"github.com/rh01/learn-blockchain/part13-iterate-db-block-chain/BLC"
 )
 
 func main() {
@@ -19,17 +19,18 @@ func main() {
 	var blockIterator *BLC.BlockChainIterator
 	blockIterator = blockchain.Iterator()
 	var hashInt big.Int
-	// cmp := big.NewInt(1)
+	// cmp := big.13(1)
 	// cmp.Lsh(x, n)
 	for {
+
+		fmt.Printf("%x\n", blockIterator.CurrentHash)
+
+		blockIterator = blockIterator.Next()
+
 		hashInt.SetBytes(blockIterator.CurrentHash)
 
 		if hashInt.Cmp(big.NewInt(0)) == 0 {
 			break
 		}
-
-		fmt.Printf("%x\n\n", blockIterator.CurrentHash)
-
-		blockIterator = blockIterator.Next()
 	}
 }

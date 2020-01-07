@@ -1,8 +1,8 @@
 package main
 
 import (
-	"blockchain/part2-proof-of-work/BLC"
 	"fmt"
+	"github.com/rh01/learn-blockchain/part2-proof-of-work/BLC"
 	"time"
 )
 

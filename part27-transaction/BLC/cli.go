@@ -84,38 +84,54 @@ func (cli *CLI) sendToken() {
 	//	Vout: nil,
 	//}
 
+	var inputs []*Transaction
+
 	// 新建交易
-	tx1 := NewUTXOTransaction("shh", "xiaoqiang", 2, cli.Blockchain)
-	tx2 := NewUTXOTransaction("shh", "xiaoming", 3, cli.Blockchain)
+	tx1 := NewUTXOTransaction("shh", "xiaoqiang", 2, cli.Blockchain, inputs)
+
+	fmt.Println("第一笔交易")
+	fmt.Println(tx1)
+
+	inputs = append(inputs, tx1)
+	tx2 := NewUTXOTransaction("shh", "xiaoming", 3, cli.Blockchain, inputs)
+
+	fmt.Println("第二笔交易")
+	fmt.Println(tx2)
+
+	inputs = append(inputs, tx2)
+	tx3 := NewUTXOTransaction("shh", "daa", 3, cli.Blockchain, inputs)
+
+	fmt.Println("第三笔交易")
+	fmt.Println(tx3)
 	// 挖矿
-	cli.Blockchain.MineBlock([]*Transaction{tx1, tx2})
+	// cli.Blockchain.MineBlock([]*Transaction{tx1, tx2, tx3})
 
 }
 
 func (cli *CLI) addBlock(data string) {
 	//cli.Blockchain.AddBlock(tx)
-	fmt.Println("FindUnspentTranscation")
-	fmt.Println("shh")
-	fmt.Println(cli.Blockchain.FindUnspentTranscation("shh"))
-
-	fmt.Println("xiaom")
-	fmt.Println(cli.Blockchain.FindUnspentTranscation("xiaoming"))
-
-	fmt.Println("xiaoqiang")
-	fmt.Println(cli.Blockchain.FindUnspentTranscation("xiaoqiang"))
-
-	count, outputMap := cli.Blockchain.FindSpendableOutputs("shh", 4)
-	fmt.Println(count)
-	fmt.Println(outputMap)
-
-	count, outputMap = cli.Blockchain.FindSpendableOutputs("xiaoqiang", 5)
-	fmt.Println(count)
-	fmt.Println(outputMap)
-
-	count, outputMap = cli.Blockchain.FindSpendableOutputs("xiaoming", 5)
-	fmt.Println(count)
-	fmt.Println(outputMap)
-	// cli.sendToken()
+	//fmt.Println("FindUnspentTranscation")
+	//fmt.Println("shh")
+	//fmt.Println(cli.Blockchain.FindUnspentTranscation("shh"))
+	//
+	//fmt.Println("xiaom")
+	//fmt.Println(cli.Blockchain.FindUnspentTranscation("xiaoming"))
+	//
+	//fmt.Println("xiaoqiang")
+	//fmt.Println(cli.Blockchain.FindUnspentTranscation("xiaoqiang"))
+	//
+	//count, outputMap := cli.Blockchain.FindSpendableOutputs("shh", 4)
+	//fmt.Println(count)
+	//fmt.Println(outputMap)
+	//
+	//count, outputMap = cli.Blockchain.FindSpendableOutputs("xiaoqiang", 5)
+	//fmt.Println(count)
+	//fmt.Println(outputMap)
+	//
+	//count, outputMap = cli.Blockchain.FindSpendableOutputs("xiaoming", 5)
+	//fmt.Println(count)
+	//fmt.Println(outputMap)
+	cli.sendToken()
 }
 
 // Run 方法用来添加flag等相关的操作

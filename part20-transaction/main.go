@@ -1,8 +1,8 @@
 package main
 
-import "github.com/rh01/learn-blockchain/part19-transaction/BLC"
-
-
+import (
+	"github.com/rh01/learn-blockchain/part20-transaction/BLC"
+)
 
 func main() {
 	// 创建区块链

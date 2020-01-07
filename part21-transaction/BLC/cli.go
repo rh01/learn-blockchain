@@ -73,7 +73,8 @@ func (cli *CLI) printChain() {
 
 func (cli *CLI) addBlock(data string) {
 	// cli.Blockchain.AddBlock(tx)
-	fmt.Println("新增了一个区块")
+	fmt.Println("FindUnspentTranscation")
+	cli.Blockchain.FindUnspentTranscation("shh")
 }
 
 // Run 方法用来添加flag等相关的操作

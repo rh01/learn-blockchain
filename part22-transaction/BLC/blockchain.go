@@ -5,13 +5,12 @@
 package BLC
 
 import (
+	"encoding/hex"
 	"fmt"
+	"github.com/boltdb/bolt"
 	"log"
 	"math/big"
 	"os"
-	"time"
-
-	"github.com/boltdb/bolt"
 )
 
 const (
@@ -30,21 +29,53 @@ type BlockChain struct {
 // 先找到包含当前用户未花费输出的所有交易的集合
 // 返回交易的数组
 func (blockchain *BlockChain) FindUnspentTranscation(address string) []Transaction {
+	// 存储未花费输出的交易
+	var unspentTXs []Transaction
+	// 存储区块当中所有的交易输入
+	spentTXOs := make(map[string][]int)
+
 	blockIterator := blockchain.Iterator()
 	var hashInt big.Int
 
 	for {
 
 		err := blockIterator.DB.View(func(tx *bolt.Tx) error {
+			// 获取表
 			b := tx.Bucket([]byte(blockTableName))
+			//反序列化
 			block := Deserialize(b.Get(blockIterator.CurrentHash))
-			// fmt.Printf("Data: %s\n", string(block.Data))
-			fmt.Printf("PrevBlockHash: %x\n", block.PrevBlockHash)
-			fmt.Printf("TimeStamp: %v\n", time.Unix(block.TimeStamp, 0).Format("2006-01-02 03:04:05 PM")) // Format 参数不能随意修改
-			fmt.Printf("Hash: %x\n", block.Hash)
 
 			for _, transaction := range block.Transactions {
 				fmt.Printf("Transaction ID: %x\n", transaction.ID)
+				//将byte array 类型转为string类型
+				txID := hex.EncodeToString(transaction.ID)
+
+			Outputs:
+				for outIdx, out := range transaction.Vout {
+					//	判断是否被花费
+					if spentTXOs[txID] != nil {
+						for _, spentOut := range spentTXOs[txID] {
+							// 相等说明，当前的输出在这个tx中已被花费
+							if spentOut == outIdx {
+								continue Outputs
+							}
+						}
+					}
+					// 若未花费，添加到未花费的
+					if out.CanBeUnlockedWith(address) {
+						unspentTXs = append(unspentTXs, *transaction)
+					}
+				}
+
+				//
+				if transaction.isCoinbase() == false {
+					for _, in := range transaction.Vin {
+						if in.CanUnlockOutputWith(address) {
+							inTxID := hex.EncodeToString(in.Txid)
+							spentTXOs[inTxID] = append(spentTXOs[inTxID], in.Vout)
+						}
+					}
+				}
 			}
 
 			fmt.Println("")
@@ -65,7 +96,7 @@ func (blockchain *BlockChain) FindUnspentTranscation(address string) []Transacti
 		}
 	}
 
-	return nil
+	return unspentTXs
 }
 
 // Iterator 返回 BlockChainIterator 对象
@@ -211,7 +242,7 @@ func NewBlockChain() *BlockChain {
 				log.Panic(err)
 			}
 			// 将创世区块序列化后的数据存储在表中
-			genesisBlock := NewGenesisBlock(NewCoinbaseTx("sss", genesisCoinbaseData))
+			genesisBlock := NewGenesisBlock(NewCoinbaseTx("shh", genesisCoinbaseData))
 
 			err = b.Put(genesisBlock.Hash, genesisBlock.Serialize())
 			if err != nil {

@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
+	"encoding/hex"
 	"fmt"
 	"log"
 )
@@ -43,6 +44,66 @@ func NewCoinbaseTx(to, data string) *Transaction {
 		Vout: []TXOutput{txout},
 	}
 
+	tx.SetID()
+
+	return &tx
+}
+
+// 新建一个转账交易
+func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transaction {
+	// 输入
+	var inputs []TXInput
+	// 输出
+	var outputs []TXOutput
+
+	// 找到有效的可用的交易输出数据模型
+	// 查询未花费的输出
+	// 10
+	// map[0ffec609bafae305b2f9be3bae96ff6c7e78a5a8fb999bf4c7210c127f6fe62e:[0]]
+	acc, validOutputs := bc.FindSpendableOutputs(from, amount)
+	if acc < amount {
+		log.Panic("ERROR: not enough founds")
+	}
+
+	// 建立输入
+	for txid, outs := range validOutputs {
+		txID, err := hex.DecodeString(txid)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		for _, out := range outs {
+			// 创建一个输入
+			input := TXInput{
+				Txid:      txID,
+				Vout:      out,
+				ScriptSig: from,
+			}
+			// 将输入添加到inputs数组中去
+			inputs = append(inputs, input)
+		}
+
+	}
+
+	// 建立输出,转账
+	output := TXOutput{
+		Value:        amount,
+		ScriptPubKey: to,
+	}
+	outputs = append(outputs, output)
+	// 建立输出，找零
+	output = TXOutput{
+		Value:        acc - amount,
+		ScriptPubKey: from,
+	}
+	outputs = append(outputs, output)
+	
+	// 创建交易
+	tx := Transaction{
+		ID:   nil,
+		Vin:  inputs,
+		Vout: outputs,
+	}
 	tx.SetID()
 
 	return &tx

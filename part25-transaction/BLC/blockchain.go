@@ -16,7 +16,7 @@ import (
 const (
 	dbName              = "blockchain.db" // 数据库的名字
 	blockTableName      = "blocks"        // 表的名字
-	genesisCoinbaseData = "xxxx"          // 创世区块的交易信息
+	genesisCoinbaseData = "2009-01-03 xxxxx"          // 创世区块的交易信息
 	subsidy             = 10
 )
 
@@ -46,7 +46,7 @@ func (blockchain *BlockChain) FindUnspentTranscation(address string) []Transacti
 			block := Deserialize(b.Get(blockIterator.CurrentHash))
 
 			for _, transaction := range block.Transactions {
-				fmt.Printf("Transaction ID: %x\n", transaction.ID)
+				// fmt.Printf("Transaction ID: %x\n", transaction.ID)
 				//将byte array 类型转为string类型
 				txID := hex.EncodeToString(transaction.ID)
 
@@ -299,4 +299,38 @@ func NewBlockChain() *BlockChain {
 	}
 
 	return &BlockChain{tip, db}
+}
+
+// MineBlock 挖矿
+// 根据交易的数组，打包新的区块
+func (blockchain *BlockChain) MineBlock(txs []*Transaction)  {
+	err := blockchain.Db.Update(func(tx *bolt.Tx) error {
+		// 新建区块
+		// 拿到新的区块
+		newBlock := NewBlock(txs, blockchain.Tip)
+
+		b := tx.Bucket([]byte(blockTableName))
+		if b != nil {
+			// key: newBlock Hash
+			// value: newBlock.Serialized
+			err := b.Put(newBlock.Hash, newBlock.Serialize())
+			if err != nil {
+				log.Panic(err)
+			}
+			// key: l
+			// value: newBlockHash
+			err = b.Put([]byte("l"), newBlock.Hash)
+			if err != nil {
+				log.Panic(err)
+			}
+			// 更新区块的最新的hash
+			blockchain.Tip = newBlock.Hash
+		}
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	// 将区块存储到区块连中
 }

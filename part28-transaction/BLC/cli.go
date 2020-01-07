@@ -31,8 +31,11 @@ func (cli *CLI) ValidateArgs() {
 // printUsage 打印参数信息
 func (cli *CLI) printUsage() {
 	fmt.Println("Usage:")
-	fmt.Println("\taddblock -data DATA -- 交易数据.")
+	// fmt.Println("\taddblock -data DATA -- 交易数据.")
+	fmt.Println("\tgetbalance -address ADDRESS -- Get balance of ADDRESS.")
+	fmt.Println("\tcreateblockchain -address ADDRESS  -- Create a blockchain and send genesis block reward to ADDRESS .")
 	fmt.Println("\tprintchain -- 输出区块信息.")
+	fmt.Println("\tsendd -from FROM -to TO -amount AMOUNT - Send amount of coin from FROM to TO.")
 }
 
 // printChain 输出区块链中的所有区块的信息
@@ -109,34 +112,12 @@ func (cli *CLI) sendToken() {
 }
 
 func (cli *CLI) addBlock(data string) {
-	//cli.Blockchain.AddBlock(tx)
-	//fmt.Println("FindUnspentTranscation")
-	//fmt.Println("shh")
-	//fmt.Println(cli.Blockchain.FindUnspentTranscation("shh"))
-	//
-	//fmt.Println("xiaom")
-	//fmt.Println(cli.Blockchain.FindUnspentTranscation("xiaoming"))
-	//
-	//fmt.Println("xiaoqiang")
-	//fmt.Println(cli.Blockchain.FindUnspentTranscation("xiaoqiang"))
-	//
-	//count, outputMap := cli.Blockchain.FindSpendableOutputs("shh", 4)
-	//fmt.Println(count)
-	//fmt.Println(outputMap)
-	//
-	//count, outputMap = cli.Blockchain.FindSpendableOutputs("xiaoqiang", 5)
-	//fmt.Println(count)
-	//fmt.Println(outputMap)
-	//
-	//count, outputMap = cli.Blockchain.FindSpendableOutputs("xiaoming", 5)
-	//fmt.Println(count)
-	//fmt.Println(outputMap)
 	cli.sendToken()
 }
 
 // Run 方法用来添加flag等相关的操作
 func (cli *CLI) Run() {
-	// 验证命令行参数
+	// 验证命令行参数,如果没有参数，将会打印Usage
 	cli.ValidateArgs()
 
 	addBlockCmd := flag.NewFlagSet("addblock", flag.ExitOnError)

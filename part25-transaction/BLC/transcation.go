@@ -20,7 +20,7 @@ type Transaction struct {
 	Vout []TXOutput // 交易的输出,一笔交易有很多交易输出
 }
 
-// NewCoinbaseTx 创世区块交易信息的初始化
+// NewCoinbaseTx 创世区块交易信息的初始化,这是一个特殊的交易
 // coinbase的交易
 func NewCoinbaseTx(to, data string) *Transaction {
 	if data == "" {
@@ -82,7 +82,6 @@ func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transactio
 			// 将输入添加到inputs数组中去
 			inputs = append(inputs, input)
 		}
-
 	}
 
 	// 建立输出,转账
@@ -96,8 +95,9 @@ func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transactio
 		Value:        acc - amount,
 		ScriptPubKey: from,
 	}
+
 	outputs = append(outputs, output)
-	
+
 	// 创建交易
 	tx := Transaction{
 		ID:   nil,

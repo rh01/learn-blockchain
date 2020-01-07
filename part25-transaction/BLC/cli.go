@@ -51,7 +51,9 @@ func (cli *CLI) printChain() {
 			fmt.Printf("PrevBlockHash: %x\n", block.PrevBlockHash)
 			fmt.Printf("TimeStamp: %v\n", time.Unix(block.TimeStamp, 0).Format("2006-01-02 03:04:05 PM")) // Format 参数不能随意修改
 			fmt.Printf("Hash: %x\n", (block.Hash))
-
+			for _, tx := range block.Transactions {
+				fmt.Println(tx)
+			}
 			fmt.Println("")
 			return nil
 		})
@@ -71,13 +73,49 @@ func (cli *CLI) printChain() {
 	}
 }
 
+func (cli *CLI) sendToken() {
+	// 1.10 -> liyuechun
+	// 2.3 -> 转给haolin
+
+	// 新建一个交易
+	//tx := Transaction{
+	//	ID:   nil,
+	//	Vin:  nil,
+	//	Vout: nil,
+	//}
+
+	// 新建交易
+	tx1 := NewUTXOTransaction("shh", "xiaoqiang", 2, cli.Blockchain)
+	tx2 := NewUTXOTransaction("shh", "xiaoming", 3, cli.Blockchain)
+	// 挖矿
+	cli.Blockchain.MineBlock([]*Transaction{tx1, tx2})
+
+}
+
 func (cli *CLI) addBlock(data string) {
-	// cli.Blockchain.AddBlock(tx)
-	//fmt.Println("FindUnspentTranscation")
-	// fmt.Println(cli.Blockchain.FindUnspentTranscation("shh"))
-	count, outputMap := cli.Blockchain.FindSpendableOutputs("shh", 5)
+	//cli.Blockchain.AddBlock(tx)
+	fmt.Println("FindUnspentTranscation")
+	fmt.Println("shh")
+	fmt.Println(cli.Blockchain.FindUnspentTranscation("shh"))
+
+	fmt.Println("xiaom")
+	fmt.Println(cli.Blockchain.FindUnspentTranscation("xiaoming"))
+
+	fmt.Println("xiaoqiang")
+	fmt.Println(cli.Blockchain.FindUnspentTranscation("xiaoqiang"))
+
+	count, outputMap := cli.Blockchain.FindSpendableOutputs("shh", 4)
 	fmt.Println(count)
 	fmt.Println(outputMap)
+
+	count, outputMap = cli.Blockchain.FindSpendableOutputs("xiaoqiang", 5)
+	fmt.Println(count)
+	fmt.Println(outputMap)
+
+	count, outputMap = cli.Blockchain.FindSpendableOutputs("xiaoming", 5)
+	fmt.Println(count)
+	fmt.Println(outputMap)
+	// cli.sendToken()
 }
 
 // Run 方法用来添加flag等相关的操作

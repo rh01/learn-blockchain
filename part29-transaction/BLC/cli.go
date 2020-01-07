@@ -40,6 +40,13 @@ func (cli *CLI) printUsage() {
 
 // printChain 输出区块链中的所有区块的信息
 func (cli *CLI) printChain() {
+	// 判断数据库是否存在
+	if dbExists() == false {
+		cli.printUsage()
+		return
+	}
+
+
 	var blockIterator *BlockChainIterator
 	blockIterator = cli.Blockchain.Iterator()
 	var hashInt big.Int
@@ -121,6 +128,7 @@ func (cli *CLI) Run() {
 	cli.ValidateArgs()
 
 	addBlockCmd := flag.NewFlagSet("addblock", flag.ExitOnError)
+	createBlockchainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
 	printBlockchainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
 
 	addBlockData := addBlockCmd.String("data", "", "add Block data field")
@@ -136,7 +144,11 @@ func (cli *CLI) Run() {
 		if err != nil {
 			log.Panic(err)
 		}
-		// fmt.Println("xxx")
+	case "createblockchain":
+		err := createBlockchainCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
 	default:
 		cli.printUsage()
 		os.Exit(1)

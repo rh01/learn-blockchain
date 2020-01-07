@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	dbName              = "blockchain.db" // 数据库的名字
-	blockTableName      = "blocks"        // 表的名字
-	genesisCoinbaseData = "2009-01-03 xxxxx"          // 创世区块的交易信息
+	dbName              = "blockchain.db"    // 数据库的名字
+	blockTableName      = "blocks"           // 表的名字
+	genesisCoinbaseData = "2009-01-03 xxxxx" // 创世区块的交易信息
 	subsidy             = 10
 )
 
@@ -28,7 +28,8 @@ type BlockChain struct {
 
 // 先找到包含当前用户未花费输出的所有交易的集合
 // 返回交易的数组
-func (blockchain *BlockChain) FindUnspentTranscation(address string) []Transaction {
+func (blockchain *BlockChain) FindUnspentTranscation(address string, txs []*Transaction) []Transaction {
+
 	// 存储未花费输出的交易
 	var unspentTXs []Transaction
 	// 存储区块当中所有的交易输入
@@ -36,6 +37,41 @@ func (blockchain *BlockChain) FindUnspentTranscation(address string) []Transacti
 
 	blockIterator := blockchain.Iterator()
 	var hashInt big.Int
+
+	// 先把已花费的全部拿出来
+	fmt.Println("FindUnspentTranscation")
+	for _, transaction := range txs {
+		if transaction.isCoinbase() == false {
+			for _, in := range transaction.Vin {
+				if in.CanUnlockOutputWith(address) {
+					inTxID := hex.EncodeToString(in.Txid)
+					spentTXOs[inTxID] = append(spentTXOs[inTxID], in.Vout)
+				}
+			}
+		}
+	}
+
+	// 然后再找未花费的
+	for _, transaction := range txs {
+			txID := hex.EncodeToString(transaction.ID)
+
+		Outputs:
+			for outIdx, out := range transaction.Vout {
+				//	判断是否被花费
+				if spentTXOs[txID] != nil {
+					for _, spentOut := range spentTXOs[txID] {
+						// 相等说明，当前的输出在这个tx中已被花费
+						if spentOut == outIdx {
+							continue Outputs
+						}
+					}
+				}
+				// 若未花费，添加到未花费的
+				if out.CanBeUnlockedWith(address) {
+					unspentTXs = append(unspentTXs, *transaction)
+				}
+			}
+	}
 
 	for {
 
@@ -102,12 +138,12 @@ func (blockchain *BlockChain) FindUnspentTranscation(address string) []Transacti
 // 通过transaction数组查找可用的未花费的输出信息
 //  16 10
 // 查找可用的交易信息
-func (blockchain *BlockChain) FindSpendableOutputs(address string, amount int) (int, map[string][]int) {
+func (blockchain *BlockChain) FindSpendableOutputs(address string, amount int, txs []*Transaction) (int, map[string][]int) {
 	// 字典，存储交易id，Vout中的未花费TXOutput的index
 	unspentOutputs := make(map[string][]int)
 
 	// 查看未花费
-	unspentTXs := blockchain.FindUnspentTranscation(address)
+	unspentTXs := blockchain.FindUnspentTranscation(address, txs)
 
 	accumulated := 0 // 统计未花费对应TXoutputs的总量
 
@@ -303,7 +339,7 @@ func NewBlockChain() *BlockChain {
 
 // MineBlock 挖矿
 // 根据交易的数组，打包新的区块
-func (blockchain *BlockChain) MineBlock(txs []*Transaction)  {
+func (blockchain *BlockChain) MineBlock(txs []*Transaction) {
 	err := blockchain.Db.Update(func(tx *bolt.Tx) error {
 		// 新建区块
 		// 拿到新的区块

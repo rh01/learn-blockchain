@@ -50,7 +50,7 @@ func NewCoinbaseTx(to, data string) *Transaction {
 }
 
 // 新建一个转账交易
-func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transaction {
+func NewUTXOTransaction(from, to string, amount int, bc *BlockChain, txs []*Transaction) *Transaction {
 	// 输入
 	var inputs []TXInput
 	// 输出
@@ -58,9 +58,9 @@ func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transactio
 
 	// 找到有效的可用的交易输出数据模型
 	// 查询未花费的输出
-	// 10
+	// 10TXOTra
 	// map[0ffec609bafae305b2f9be3bae96ff6c7e78a5a8fb999bf4c7210c127f6fe62e:[0]]
-	acc, validOutputs := bc.FindSpendableOutputs(from, amount)
+	acc, validOutputs := bc.FindSpendableOutputs(from, amount, txs)
 	if acc < amount {
 		log.Panic("ERROR: not enough founds")
 	}

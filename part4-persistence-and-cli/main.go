@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rh01/blockchain/part4-persistence-and-cli/BLC"
+	"github.com/rh01/learn-blockchain/part4-persistence-and-cli/BLC"
 )
 
 // 16 进制

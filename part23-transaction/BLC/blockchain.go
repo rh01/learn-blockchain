@@ -99,6 +99,38 @@ func (blockchain *BlockChain) FindUnspentTranscation(address string) []Transacti
 	return unspentTXs
 }
 
+// 通过transaction数组查找可用的未花费的输出信息
+//  16 10
+// 查找可用的交易信息
+func (blockchain *BlockChain) FindSpendableOutputs(address string, amount int) (int, map[string][]int) {
+	// 字典，存储交易id，Vout中的未花费TXOutput的index
+	unspentOutputs := make(map[string][]int)
+
+	// 查看未花费
+	unspentTXs := blockchain.FindUnspentTranscation(address)
+
+	accumulated := 0 // 统计未花费对应TXoutputs的总量
+
+Work:
+	// 遍历交易数组
+	for _, tx := range unspentTXs {
+		txID := hex.EncodeToString(tx.ID)
+		// 遍历交易里面的Vout
+		for outIdx, output := range tx.Vout {
+			if output.CanBeUnlockedWith(address) && accumulated < amount {
+				accumulated += output.Value
+				unspentOutputs[txID] = append(unspentOutputs[txID], outIdx)
+
+				if accumulated >= amount {
+					break Work
+				}
+			}
+		}
+	}
+	// 12, {"1111":[1,2,3]}
+	return accumulated, unspentOutputs
+}
+
 // Iterator 返回 BlockChainIterator 对象
 func (blockchain *BlockChain) Iterator() *BlockChainIterator {
 

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/rh01/blockchain/part3-serialize-and-deserialize/BLC"
+	"github.com/rh01/learn-blockchain/part3-serialize-and-deserialize/BLC"
 )
 
 func main() {

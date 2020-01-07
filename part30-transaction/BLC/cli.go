@@ -127,11 +127,22 @@ func (cli *CLI) Run() {
 	// 验证命令行参数,如果没有参数，将会打印Usage
 	cli.ValidateArgs()
 
-	addBlockCmd := flag.NewFlagSet("addblock", flag.ExitOnError)
-	createBlockchainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
 	printBlockchainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
 
+	addBlockCmd := flag.NewFlagSet("addblock", flag.ExitOnError)
 	addBlockData := addBlockCmd.String("data", "", "add Block data field")
+
+	createBlockchainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
+	genenisAddress := createBlockchainCmd.String("address", "", "创建创世区块，并将区块打包到数据库中")
+
+	getBalanceCmd := flag.NewFlagSet("getbalance", flag.ExitOnError)
+	balanceAddress := getBalanceCmd.String("address", "", "查询余额")
+
+	sendCmd := flag.NewFlagSet("send", flag.ExitOnError)
+	fromAddress := sendCmd.String("from", "", "源地址...")
+	toAddress := sendCmd.String("to", "", "目标地址....")
+	amount := sendCmd.Int("amount", 0, "转账的数量....")
+
 
 	switch os.Args[1] {
 	case "addblock":
@@ -149,6 +160,16 @@ func (cli *CLI) Run() {
 		if err != nil {
 			log.Panic(err)
 		}
+	case "getbalance":
+		err := getBalanceCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "send":
+		err := sendCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
 	default:
 		cli.printUsage()
 		os.Exit(1)
@@ -162,6 +183,35 @@ func (cli *CLI) Run() {
 		// fmt.Println("Data: " + *addBlockData)
 		cli.addBlock(*addBlockData)
 	}
+
+
+	if createBlockchainCmd.Parsed() {
+		if *genenisAddress == "" {
+			cli.printUsage()
+			os.Exit(1)
+		}
+		fmt.Println("创建创世区块并存储到数据库中...")
+	}
+
+
+	if getBalanceCmd.Parsed() {
+		if *balanceAddress == "" {
+			cli.printUsage()
+			os.Exit(1)
+		}
+		fmt.Printf("查询 %s 的余额...\n", *balanceAddress)
+	}
+
+	if sendCmd.Parsed() {
+		if *fromAddress == "" || *toAddress == "" || *amount == 0 {
+			cli.printUsage()
+			os.Exit(1)
+		}
+
+		fmt.Printf("send -from %s -to %s -amount %d\n", *fromAddress, *toAddress, *amount)
+	}
+
+
 
 	if printBlockchainCmd.Parsed() {
 		cli.printChain()

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/rh01/learn-blockchain/part29-transaction/BLC"
+	"github.com/rh01/learn-blockchain/part30-transaction/BLC"
 )
 
 func main() {

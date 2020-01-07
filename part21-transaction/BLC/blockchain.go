@@ -7,7 +7,9 @@ package BLC
 import (
 	"fmt"
 	"log"
+	"math/big"
 	"os"
+	"time"
 
 	"github.com/boltdb/bolt"
 )
@@ -23,6 +25,47 @@ const (
 type BlockChain struct {
 	Tip []byte   // 区块链中最后一个区块的哈希
 	Db  *bolt.DB // 数据库
+}
+
+// 先找到包含当前用户未花费输出的所有交易的集合
+// 返回交易的数组
+func (blockchain *BlockChain) FindUnspentTranscation(address string) []Transaction {
+	blockIterator := blockchain.Iterator()
+	var hashInt big.Int
+
+	for {
+
+		err := blockIterator.DB.View(func(tx *bolt.Tx) error {
+			b := tx.Bucket([]byte(blockTableName))
+			block := Deserialize(b.Get(blockIterator.CurrentHash))
+			// fmt.Printf("Data: %s\n", string(block.Data))
+			fmt.Printf("PrevBlockHash: %x\n", block.PrevBlockHash)
+			fmt.Printf("TimeStamp: %v\n", time.Unix(block.TimeStamp, 0).Format("2006-01-02 03:04:05 PM")) // Format 参数不能随意修改
+			fmt.Printf("Hash: %x\n", block.Hash)
+
+			for _, transaction := range block.Transactions {
+				fmt.Printf("Transaction ID: %x\n", transaction.ID)
+			}
+
+			fmt.Println("")
+			return nil
+		})
+		if err != nil {
+			log.Panic(err)
+		}
+
+		// fmt.Printf("%x\n", blockIterator.CurrentHash)
+
+		blockIterator = blockIterator.Next()
+
+		hashInt.SetBytes(blockIterator.CurrentHash)
+
+		if hashInt.Cmp(big.NewInt(0)) == 0 {
+			break
+		}
+	}
+
+	return nil
 }
 
 // Iterator 返回 BlockChainIterator 对象
@@ -149,8 +192,6 @@ func CreateBlockchainWithGenesisBlock() *BlockChain {
 
 	return &BlockChain{blockHash, db}
 }
-
-
 
 // NewBlockChain 初始化一个区块链
 func NewBlockChain() *BlockChain {

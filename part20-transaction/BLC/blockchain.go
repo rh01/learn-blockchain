@@ -150,34 +150,7 @@ func CreateBlockchainWithGenesisBlock() *BlockChain {
 	return &BlockChain{blockHash, db}
 }
 
-// NewCoinbaseTx 创世区块交易信息的初始化
-// coinbase的交易
-func NewCoinbaseTx(to, data string) *Transaction {
-	if data == "" {
-		data = fmt.Sprintf("Reward to %s", to)
-	}
 
-	txin := TXInput{
-		Txid:      []byte{}, // 交易的id，创世区块的交易id为nil
-		Vout:      -1,       // 创世区块的输出交易的索引为-1，即不存在
-		ScriptSig: data,     // 创世区块的交易信息
-	}
-
-	txout := TXOutput{
-		Value:        subsidy,
-		ScriptPubKey: to,
-	}
-
-	tx := Transaction{
-		ID:   nil,
-		Vin:  []TXInput{txin},
-		Vout: []TXOutput{txout},
-	}
-
-	tx.SetID()
-
-	return &tx
-}
 
 // NewBlockChain 初始化一个区块链
 func NewBlockChain() *BlockChain {

@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
+	"fmt"
 	"log"
 )
 
@@ -16,6 +17,35 @@ type Transaction struct {
 	ID   []byte     // 交易的ID
 	Vin  []TXInput  // 交易的输入
 	Vout []TXOutput // 交易的输出,一笔交易有很多交易输出
+}
+
+// NewCoinbaseTx 创世区块交易信息的初始化
+// coinbase的交易
+func NewCoinbaseTx(to, data string) *Transaction {
+	if data == "" {
+		data = fmt.Sprintf("Reward to %s", to)
+	}
+
+	txin := TXInput{
+		Txid:      []byte{}, // 交易的id，创世区块的交易id为nil
+		Vout:      -1,       // 创世区块的输出交易的索引为-1，即不存在
+		ScriptSig: data,     // 创世区块的交易信息
+	}
+
+	txout := TXOutput{
+		Value:        subsidy,
+		ScriptPubKey: to,
+	}
+
+	tx := Transaction{
+		ID:   nil,
+		Vin:  []TXInput{txin},
+		Vout: []TXOutput{txout},
+	}
+
+	tx.SetID()
+
+	return &tx
 }
 
 // SetID 设置交易的ID
@@ -34,6 +64,22 @@ func (tx *Transaction) SetID() {
 	tx.ID = hash[:]
 }
 
+// 新建新的UTXO交易，转账
+// 1. 先找到包含当前用户未花费的所有交易的集合
+// 2. 找到用户足够的余额所对应的未花费输出
+// 未花费输出：TXOutput没有对应的TXInput
+// 3. 12, {"1111":[1,2,3]}
+// 4. 新建一个输入
+// 5. 新建输出
+//   1. TXOuput:
+//   2. TXOuput:
+
+// 1. 判断当前交易是否是CoinbaseTX
+func (tx *Transaction) isCoinbase() bool {
+	return len(tx.Vin) == 1 &&
+		tx.Vin[0].Vout == -1 && len(tx.Vin[0].Txid) == 0
+}
+
 // TXInput 表示一笔交易的输入
 // 假设交易输入对应交易输出，那么如何绑定这两者？
 // ID -> transcation (Found)
@@ -45,9 +91,19 @@ type TXInput struct {
 	ScriptSig string // 存储TXInput
 }
 
+// CanUnlockOutputWith 检查账号地址
+func (in *TXInput) CanUnlockOutputWith(unlockingData string) bool {
+	return in.ScriptSig == unlockingData
+}
+
 // TXOutput 表示一笔交易的输出
 // 交易的输出怎么理解？转账，必须有转账的数额和转账的地址
 type TXOutput struct {
 	Value        int    // 分
 	ScriptPubKey string // 钱包的地址
+}
+
+// CanBeUnlockedWith 检查是否能够检索账号
+func (out *TXOutput) CanBeUnlockedWith(unlockingData string) bool {
+	return out.ScriptPubKey == unlockingData
 }
